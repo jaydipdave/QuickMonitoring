@@ -1,0 +1,52 @@
+---
+- name: Setup Monitoring Agent(s)
+  hosts: all
+  become: yes
+
+  vars:
+    domain: monitoring-server.yourcompany.com
+    agent_username: "secret_user"
+    agent_password: "SecretPassword123"
+
+      
+  tasks:
+    - name: Install necessary packages
+      apt:
+        name: "{{item}}"
+        state: latest
+        update_cache: yes
+        cache_valid_time: 3600
+      with_items:
+        - docker-compose
+        - jq
+        - apache2-utils
+
+    - name: Create folder structure 
+      file:
+        path: "{{item}}"
+        state: directory
+      with_items:
+        - /opt/monitoring/agent
+
+    - name: Copy files
+      copy:
+        src: "{{item.src}}"
+        dest: "{{item.dest}}"
+        mode: "{{item.mode}}"
+      with_items:
+        - {src: ./run.sh, dest: /opt/monitoring/agent/run.sh, mode: "u+rwx,g+rwx,o+rx" }
+        - {src: ./docker-compose.yml, dest: /opt/monitoring/agent/docker-compose.yml, mode: "u+rw,g+r,o+r"}
+        
+    - name: Adding the SERVICE_LABEL environment variable in the bashrc file
+      lineinfile: dest=~/.bashrc line='export SERVICE_LABEL={{ SERVICE_LABEL }}' insertafter='EOF' state=present
+    
+    - name: Generating passwordfile
+      htpasswd:
+        path: /opt/monitoring/agent/.htpasswd
+        name: agent_username
+        password: agent_password
+
+    - name: Starting the agent
+      command: /opt/monitoring/agent/run.sh
+      environment: 
+        SERVICE_LABEL: "{{ SERVICE_LABEL }}"
