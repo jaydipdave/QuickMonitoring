@@ -3,7 +3,7 @@ version: '2'
 services:
 
   agent:
-    image: agent:latest
+    image: jaydipdave/quickmonitoring-agent:latest
     container_name: agent
     restart: unless-stopped
     privileged: true
