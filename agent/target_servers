@@ -1,0 +1,16 @@
+[some_servers]
+someserver1.mycompany.com
+someserver2.mycompany.com
+someserver2.mycompany.com
+
+[some_servers:vars]
+SERVICE_LABEL=some_servers
+
+
+[some_services]
+someservice1.mycompany.com
+someservice2.mycompany.com
+someservice3.mycompany.com
+
+[some_services:vars]
+SERVICE_LABEL=some_services
